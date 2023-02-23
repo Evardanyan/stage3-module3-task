@@ -3,22 +3,29 @@ package com.mjc.school.repository.impl;
 import com.mjc.school.repository.BaseRepository;
 import com.mjc.school.repository.model.impl.NewsModel;
 import com.mjc.school.repository.model.impl.TagModel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.persistence.*;
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 
 @Repository
-@Transactional
+//@Transactional
 public class NewsRepository implements BaseRepository<NewsModel, Long> {
 
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Autowired
+    private PlatformTransactionManager transactionManager;
 
     public Optional<NewsModel> readTagsAndAuthorByNewsId(Long newsId) {
         NewsModel newsModel = entityManager.find(NewsModel.class, newsId);
@@ -99,51 +106,77 @@ public class NewsRepository implements BaseRepository<NewsModel, Long> {
 
     @Override
     public NewsModel create(NewsModel model) {
-        if (model.getTagId() != null) {
-            List<TagModel> tagModels = entityManager.createQuery("SELECT t FROM TagModel t", TagModel.class).getResultList();
-            List<TagModel> existingTagModels = new ArrayList<>();
-            for (TagModel tagModel : tagModels) {
+        TransactionDefinition txDef = new DefaultTransactionDefinition();
+        TransactionStatus txStatus = transactionManager.getTransaction(txDef);
+        try {
+            if (model.getTagId() != null) {
+                List<TagModel> tagModels = entityManager.createQuery("SELECT t FROM TagModel t", TagModel.class).getResultList();
+                List<TagModel> existingTagModels = new ArrayList<>();
+                for (TagModel tagModel : tagModels) {
+                    TagModel existingTagModel = entityManager.find(TagModel.class, model.getTagId());
+                    if (existingTagModel != null) {
+                        existingTagModels.add(existingTagModel);
+                    } else {
+                        existingTagModels.add(null);
+                    }
+                }
+                model.setTagModels(existingTagModels);
+            }
+            entityManager.persist(model);
+            transactionManager.commit(txStatus);
+            return model;
+        } catch (RuntimeException e) {
+            transactionManager.rollback(txStatus);
+            throw e;
+        }
+    }
+
+
+    @Override
+    public NewsModel update(NewsModel model) {
+        TransactionDefinition txDef = new DefaultTransactionDefinition();
+        TransactionStatus txStatus = transactionManager.getTransaction(txDef);
+        try {
+            NewsModel newsModel = entityManager.find(NewsModel.class, model.getId());
+            newsModel.setTitle(model.getTitle());
+            newsModel.setContent(model.getContent());
+            if (model.getTagId() != null) {
+                List<TagModel> tagModels = entityManager.createQuery("SELECT t FROM TagModel t", TagModel.class).getResultList();
+                List<TagModel> existingTagModels = new ArrayList<>();
                 TagModel existingTagModel = entityManager.find(TagModel.class, model.getTagId());
                 if (existingTagModel != null) {
                     existingTagModels.add(existingTagModel);
                 } else {
                     existingTagModels.add(null);
                 }
+                newsModel.setTagModels(existingTagModels);
             }
-            model.setTagModels(existingTagModels);
+            entityManager.merge(newsModel);
+            transactionManager.commit(txStatus);
+            return newsModel;
+        } catch (RuntimeException e) {
+            transactionManager.rollback(txStatus);
+            throw e;
         }
-        entityManager.persist(model);
-        return model;
-    }
-
-
-    @Override
-    public NewsModel update(NewsModel model) {
-        NewsModel newsModel = entityManager.find(NewsModel.class, model.getId());
-        newsModel.setTitle(model.getTitle());
-        newsModel.setContent(model.getContent());
-        if (model.getTagId() != null) {
-            List<TagModel> tagModels = entityManager.createQuery("SELECT t FROM TagModel t", TagModel.class).getResultList();
-            List<TagModel> existingTagModels = new ArrayList<>();
-            TagModel existingTagModel = entityManager.find(TagModel.class, model.getTagId());
-            if (existingTagModel != null) {
-                existingTagModels.add(existingTagModel);
-            } else {
-                existingTagModels.add(null);
-            }
-            newsModel.setTagModels(existingTagModels);
-        }
-        return entityManager.merge(newsModel);
     }
 
     @Override
     public boolean deleteById(Long newsId) {
-        NewsModel newsModel = entityManager.find(NewsModel.class, newsId);
-        if (newsModel != null) {
-            entityManager.remove(newsModel);
-            return true;
+        TransactionDefinition txDef = new DefaultTransactionDefinition();
+        TransactionStatus txStatus = transactionManager.getTransaction(txDef);
+        try {
+            NewsModel newsModel = entityManager.find(NewsModel.class, newsId);
+            if (newsModel != null) {
+                entityManager.remove(newsModel);
+                transactionManager.commit(txStatus);
+                return true;
+            }
+            transactionManager.rollback(txStatus);
+            return false;
+        } catch (RuntimeException e) {
+            transactionManager.rollback(txStatus);
+            throw e;
         }
-        return false;
     }
 
     @Override

@@ -2,20 +2,27 @@ package com.mjc.school.repository.impl;
 
 import com.mjc.school.repository.BaseRepository;
 import com.mjc.school.repository.model.impl.TagModel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-@Transactional
+//@Transactional
 public class TagRepository implements BaseRepository<TagModel, Long> {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Autowired
+    private PlatformTransactionManager transactionManager;
 
     @Override
     public List<TagModel> readAll() {
@@ -29,25 +36,51 @@ public class TagRepository implements BaseRepository<TagModel, Long> {
 
     @Override
     public TagModel create(TagModel entity) {
-        entityManager.persist(entity);
+        TransactionDefinition txDef = new DefaultTransactionDefinition();
+        TransactionStatus txStatus = transactionManager.getTransaction(txDef);
+        try {
+            entityManager.persist(entity);
+            transactionManager.commit(txStatus);
+        } catch (RuntimeException e) {
+            transactionManager.rollback(txStatus);
+            throw e;
+        }
         return entity;
     }
 
     @Override
     public TagModel update(TagModel entity) {
+        TransactionDefinition txDef = new DefaultTransactionDefinition();
+        TransactionStatus txStatus = transactionManager.getTransaction(txDef);
         TagModel tagModel = entityManager.find(TagModel.class, entity.getId());
-        tagModel.setName(entity.getName());
+        try {
+            tagModel.setName(entity.getName());
+            transactionManager.commit(txStatus);
+        } catch (RuntimeException e) {
+            transactionManager.rollback(txStatus);
+            throw e;
+        }
         return tagModel;
     }
 
     @Override
     public boolean deleteById(Long id) {
-        Optional<TagModel> tagModel = readById(id);
-        if (tagModel.isPresent()) {
-            entityManager.remove(tagModel.get());
-            return true;
-        } else {
-            return false;
+        TransactionDefinition txDef = new DefaultTransactionDefinition();
+        TransactionStatus txStatus = transactionManager.getTransaction(txDef);
+        try {
+            Optional<TagModel> tagModel = readById(id);
+            if (tagModel.isPresent()) {
+                entityManager.remove(tagModel.get());
+                transactionManager.commit(txStatus);
+                return true;
+            } else {
+                transactionManager.rollback(txStatus);
+                return false;
+            }
+
+        } catch (RuntimeException e) {
+            transactionManager.rollback(txStatus);
+            throw e;
         }
     }
 
