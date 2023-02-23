@@ -17,7 +17,6 @@ import java.util.Optional;
 
 
 @Repository
-//@Transactional
 public class NewsRepository implements BaseRepository<NewsModel, Long> {
 
 
