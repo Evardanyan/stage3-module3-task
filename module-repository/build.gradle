@@ -1,4 +1,5 @@
 dependencies {
     implementation group: 'org.springframework', name: 'spring-aop', version: '5.3.18'
     implementation 'org.aspectj:aspectjweaver:1.9.9'
+    runtimeOnly 'com.h2database:h2:2.1.214'
 }

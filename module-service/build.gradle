@@ -8,7 +8,7 @@ dependencies {
     testImplementation "org.mockito:mockito-core:3.+"
     // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
     implementation 'org.mockito:mockito-junit-jupiter:3.8.0'
-    runtimeOnly 'com.h2database:h2:2.1.214'
+
 
 
 
