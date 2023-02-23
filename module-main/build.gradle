@@ -7,6 +7,7 @@ mainClassName = 'com.mjc.school.Main'
 dependencies {
     implementation project(':module-web')
     implementation project(':module-service')
+    implementation project(path: ':module-repository')
 
 
 }
