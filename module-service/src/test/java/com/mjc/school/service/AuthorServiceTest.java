@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -38,7 +39,7 @@ class AuthorServiceTest {
     private AuthorModel authorModel;
     private AuthorDtoResponse authorDtoResponse;
 
-    Date now = new Date();
+    OffsetDateTime  now = OffsetDateTime.now();
 
 
     @DisplayName("JUnit test for create method")

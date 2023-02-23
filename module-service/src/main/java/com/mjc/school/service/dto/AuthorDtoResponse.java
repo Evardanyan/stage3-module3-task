@@ -1,8 +1,9 @@
 package com.mjc.school.service.dto;
 
+import java.time.OffsetDateTime;
 import java.util.Date;
 
-public record AuthorDtoResponse(Long id, String name, Date createDate, Date lastUpdatedDate) {
+public record AuthorDtoResponse(Long id, String name, OffsetDateTime createDate, OffsetDateTime lastUpdatedDate) {
 
     @Override
     public String toString() {

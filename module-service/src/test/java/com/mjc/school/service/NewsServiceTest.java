@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -50,7 +51,7 @@ class NewsServiceTest {
 
     private List<NewsDtoResponse> expectedDtos;
 
-    Date now = new Date();
+    OffsetDateTime now = OffsetDateTime.now();
 
     @BeforeEach
     void setUp() {

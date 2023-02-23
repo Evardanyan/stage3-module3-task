@@ -1,16 +1,17 @@
 package com.mjc.school.repository.model.impl;
 
 import com.mjc.school.repository.model.BaseEntity;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
 
 @Entity
-//@Scope("prototype")
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "Author")
 public class AuthorModel implements BaseEntity<Long> {
 
@@ -19,15 +20,13 @@ public class AuthorModel implements BaseEntity<Long> {
     private Long id;
     private String name;
 
-    @CreationTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
+    @CreatedDate
     @Column(name = "create_date")
-    private Date createDate;
+    private OffsetDateTime createDate;
 
-    @UpdateTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
+    @LastModifiedDate
     @Column(name = "last_updated_date")
-    private Date lastUpdatedDate;
+    private OffsetDateTime lastUpdatedDate;
 
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "authorModel", cascade = CascadeType.REMOVE)
@@ -63,19 +62,19 @@ public class AuthorModel implements BaseEntity<Long> {
         this.name = name;
     }
 
-    public Date getCreateDate() {
+    public OffsetDateTime getCreateDate() {
         return createDate;
     }
 
-    public void setCreateDate(Date createDate) {
+    public void setCreateDate(OffsetDateTime createDate) {
         this.createDate = createDate;
     }
 
-    public Date getLastUpdatedDate() {
+    public OffsetDateTime getLastUpdatedDate() {
         return lastUpdatedDate;
     }
 
-    public void setLastUpdatedDate(Date lastUpdatedDate) {
+    public void setLastUpdatedDate(OffsetDateTime lastUpdatedDate) {
         this.lastUpdatedDate = lastUpdatedDate;
     }
 
